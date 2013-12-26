@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
-# linguist — detect language type for a file, or, given a directory, determine language breakdown
-#     usage: linguist <path>
+# tongue — detect language type for a file, or, given a directory, determine language breakdown
+#     usage: tongue <path>
 
 require 'linguist/file_blob'
 require 'linguist/repository'
@@ -42,5 +42,5 @@ elsif File.file?(path)
     puts "  appears to be a vendored file"
   end
 else
-  abort "usage: linguist <path>"
+  abort "usage: tongue <path>"
 end

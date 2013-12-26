@@ -43,7 +43,9 @@ module Linguist
     #
     # Returns a String.
     def data
-      File.read(@path)
+      data = File.read(@path).encode!('UTF-8', :invalid => :replace, 
+                   :undefined => :replace).byteslice(0..3072)
+      data = data.valid_encoding? ? data : nil; return data
     end
 
     # Public: Get byte size

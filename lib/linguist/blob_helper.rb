@@ -1,9 +1,9 @@
 require 'linguist/generated'
 require 'linguist/language'
 
-require 'charlock_holmes'
-require 'escape_utils'
-require 'mime/types'
+# require 'charlock_holmes'
+# require 'escape_utils'
+# require 'mime/types'
 require 'pygments'
 require 'yaml'
 
@@ -33,16 +33,17 @@ module Linguist
     #
     # Returns a MIME::Type
     def _mime_type
-      if defined? @_mime_type
-        @_mime_type
-      else
-        guesses = ::MIME::Types.type_for(extname.to_s)
-
-        # Prefer text mime types over binary
-        @_mime_type = guesses.detect { |type| type.ascii? } ||
-          # Otherwise use the first guess
-          guesses.first
-      end
+      'text/plain'
+      # if defined? @_mime_type
+      #   @_mime_type
+      # else
+      #   guesses = ::MIME::Types.type_for(extname.to_s)
+      # 
+      #   # Prefer text mime types over binary
+      #   @_mime_type = guesses.detect { |type| type.ascii? } ||
+      #     # Otherwise use the first guess
+      #     guesses.first
+      # end
     end
 
     # Public: Get the actual blob mime type
@@ -54,14 +55,15 @@ module Linguist
     #
     # Returns a mime type String.
     def mime_type
-      _mime_type ? _mime_type.to_s : 'text/plain'
+      'text/plain'
     end
 
     # Internal: Is the blob binary according to its mime type
     #
     # Return true or false
     def binary_mime_type?
-      _mime_type ? _mime_type.binary? : false
+      false
+      # _mime_type ? _mime_type.binary? : false
     end
 
     # Internal: Is the blob binary according to its mime type,
@@ -70,7 +72,8 @@ module Linguist
     #
     # Return true or false
     def likely_binary?
-      binary_mime_type? && !Language.find_by_filename(name)
+      false
+      # binary_mime_type? && !Language.find_by_filename(name)
     end
 
     # Public: Get the Content-Type header value
@@ -84,8 +87,9 @@ module Linguist
     #
     # Returns a content type String.
     def content_type
-      @content_type ||= (binary_mime_type? || binary?) ? mime_type :
-        (encoding ? "text/plain; charset=#{encoding.downcase}" : "text/plain")
+      "text/plain"
+      # @content_type ||= (binary_mime_type? || binary?) ? mime_type :
+        # (encoding ? "text/plain; charset=#{encoding.downcase}" : "text/plain")
     end
 
     # Public: Get the Content-Disposition header value
@@ -102,14 +106,15 @@ module Linguist
       elsif name.nil?
         "attachment"
       else
-        "attachment; filename=#{EscapeUtils.escape_url(File.basename(name))}"
+        'attachment'
+        # "attachment; filename=#{EscapeUtils.escape_url(File.basename(name))}"
       end
     end
 
     def encoding
-      if hash = detect_encoding
-        hash[:encoding]
-      end
+      # if hash = detect_encoding
+      'UTF-8'
+      # end
     end
 
     # Try to guess the encoding
@@ -118,7 +123,7 @@ module Linguist
     #          this will return nil if an error occurred during detection or
     #          no valid encoding could be found
     def detect_encoding
-      @detect_encoding ||= CharlockHolmes::EncodingDetector.new.detect(data) if data
+      {:encoding => 'UTF-8', :confidence => 100, :type => :text}
     end
 
     # Public: Is the blob binary?
@@ -128,18 +133,20 @@ module Linguist
       # Large blobs aren't even loaded into memory
       if data.nil?
         true
-
-      # Treat blank files as text
-      elsif data == ""
+      else
         false
+      # end
+      # Treat blank files as text
+      # elsif data == ""
+        # false
 
       # Charlock doesn't know what to think
-      elsif encoding.nil?
-        true
+      # elsif encoding.nil?
+        # true
 
       # If Charlock says its binary
-      else
-        detect_encoding[:type] == :binary
+      # else
+        # detect_encoding[:type] == :binary
       end
     end
 
@@ -147,44 +154,49 @@ module Linguist
     #
     # Return true or false
     def text?
-      !binary?
+      true
     end
 
     # Public: Is the blob a supported image format?
     #
     # Return true or false
     def image?
-      ['.png', '.jpg', '.jpeg', '.gif'].include?(extname.downcase)
+      false
+      # ['.png', '.jpg', '.jpeg', '.gif'].include?(extname.downcase)
     end
 
     # Public: Is the blob a supported 3D model format?
     #
     # Return true or false
     def solid?
-      extname.downcase == '.stl'
+      false
+      # extname.downcase == '.stl'
     end
 
     # Public: Is this blob a CSV file?
     #
     # Return true or false
     def csv?
-      text? && extname.downcase == '.csv'
+      false
+      # text? && extname.downcase == '.csv'
     end
 
     # Public: Is the blob a PDF?
     #
     # Return true or false
     def pdf?
-      extname.downcase == '.pdf'
+      false
+      # extname.downcase == '.pdf'
     end
 
-    MEGABYTE = 1024 * 1024
+    # MEGABYTE = 1024 * 1024
 
     # Public: Is the blob too big to load?
     #
     # Return true or false
     def large?
-      size.to_i > MEGABYTE
+      false
+      # size.to_i > MEGABYTE
     end
 
     # Public: Is the blob safe to colorize?
@@ -195,7 +207,8 @@ module Linguist
     #
     # Return true or false
     def safe_to_colorize?
-      !large? && text? && !high_ratio_of_long_lines?
+      true
+      # !large? && text? && !high_ratio_of_long_lines?
     end
 
     # Internal: Does the blob have a ratio of long lines?
@@ -205,8 +218,9 @@ module Linguist
     #
     # Return true or false
     def high_ratio_of_long_lines?
-      return false if loc == 0
-      size / loc > 5000
+      false
+      # return false if loc == 0
+      # size / loc > 5000
     end
 
     # Public: Is the blob viewable?
@@ -215,11 +229,12 @@ module Linguist
     #
     # Return true or false
     def viewable?
-      !large? && text?
+      true
+      # !large? && text?
     end
 
-    vendored_paths = YAML.load_file(File.expand_path("../vendor.yml", __FILE__))
-    VendoredRegexp = Regexp.new(vendored_paths.join('|'))
+    # vendored_paths = YAML.load_file(File.expand_path("../vendor.yml", __FILE__))
+    # VendoredRegexp = Regexp.new(vendored_paths.join('|'))
 
     # Public: Is the blob in a vendored directory?
     #
@@ -230,7 +245,8 @@ module Linguist
     #
     # Return true or false
     def vendored?
-      name =~ VendoredRegexp ? true : false
+      false
+      # name =~ VendoredRegexp ? true : false
     end
 
     # Public: Get each line of data
@@ -240,7 +256,7 @@ module Linguist
     # Returns an Array of lines
     def lines
       @lines ||=
-        if viewable? && data
+        if viewable? && data && !data.nil? && !data == ''
           data.split(/\r\n|\r|\n/, -1)
         else
           []
@@ -274,7 +290,8 @@ module Linguist
     #
     # Return true or false
     def generated?
-      @_generated ||= Generated.generated?(name, lambda { data })
+      false
+      # @_generated ||= Generated.generated?(name, lambda { data })
     end
 
     # Public: Detects the Language of the blob.
@@ -285,10 +302,10 @@ module Linguist
     def language
       return @language if defined? @language
 
-      if defined?(@data) && @data.is_a?(String)
+      if defined?(@data) && @data.is_a?(String) && !data == '' && !data.nil?
         data = @data
       else
-        data = lambda { (binary_mime_type? || binary?) ? "" : self.data }
+        data = lambda { self.data }
       end
 
       @language = Language.detect(name.to_s, data, mode)

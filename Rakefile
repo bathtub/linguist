@@ -18,7 +18,7 @@ end
 task :build_gem do
   languages = YAML.load_file("lib/linguist/languages.yml")
   File.write("lib/linguist/languages.json", JSON.dump(languages))
-  `gem build github-linguist.gemspec`
+  `gem build tongue.gemspec`
   File.delete("lib/linguist/languages.json")
 end
 
